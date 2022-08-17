@@ -49,7 +49,7 @@ bootable: grubconf kernel
 	grub2-mkrescue --compress=xz -o ${KERNEL} ${DIR_ISO}
 
 run: bootable
-	${QEMU} ${QEMUFLAGS} -cdrom ${KERNEL}
+	${QEMU} ${QEMUFLAGS} -drive format=raw,file=${KERNEL}
 
 
 .PHONY: all kernel grubconf bootable run
