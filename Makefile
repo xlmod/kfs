@@ -48,8 +48,18 @@ ${DIR_ISO_BOOT}/${KERNEL}: ${DIR_BUILD}/boot.o ${DIR_BUILD}/multiboot_header.o
 bootable: grubconf kernel
 	grub2-mkrescue --compress=xz -o ${KERNEL} ${DIR_ISO}
 
-run: bootable
+run:
 	${QEMU} ${QEMUFLAGS} -drive format=raw,file=${KERNEL}
 
+clean: _clean
 
-.PHONY: all kernel grubconf bootable run
+fclean: _clean
+	${RM} ${KERNEL}
+
+_clean:
+	${RM} -r ${DIR_ISO} ${DIR_BUILD}
+
+re: fclean all
+
+
+.PHONY: all kernel grubconf bootable run clean fclean _clean re
