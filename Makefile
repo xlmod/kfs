@@ -1,65 +1,66 @@
 
 # INFO
-VERSION=0.1.0
-KERNEL=kfs-${VERSION}
-ARCH=i386
+version:=0.1.0
+arch:=i386
+
 
 # RUN VAR
-QEMU=qemu-system-i386
-QEMUFLAGS=
+qemu:=qemu-system-i386
 
 # DIRECTORY SOURCE
-DIR_SRC=src
-DIR_ARCH=arch
+dir_src:=src
+dir_arch:=arch
 
 # DIRECTORY BUILD
-DIR_BUILD=build
-DIR_ISO=iso
-DIR_ISO_BOOT=${DIR_ISO}/boot
-DIR_ISO_GRUBCONF=${DIR_ISO_BOOT}/grub
+dir_build:=build
+dir_iso:=${dir_build}/iso
+dir_iso_boot:=${dir_iso}/boot
+dir_iso_grub:=${dir_iso_boot}/grub
+
+# FILES
+linker_script:=${dir_arch}/${arch}/linker.ld
+grub_cfg:=${dir_arch}/${arch}/grub.cfg
+assembly_source_files:=$(wildcard ${dir_arch}/${arch}/*.asm)
+assembly_object_files:=$(patsubst ${dir_arch}/${arch}/%.asm, \
+					   ${dir_build}/${dir_arch}/${arch}/%.o, \
+					   ${assembly_source_files})
+
+kernelname:=kfs-${version}
+kernel:=${dir_build}/${kernelname}.bin
+iso:=${dir_build}/${kernelname}
+
+
 
 # BUILD VAR
-AS=nasm
-ASFLAGS=-f elf32
-LD=ld
-LDFLAGS=-m elf_i386 -n -T ${DIR_ARCH}/${ARCH}/linker.ld
+AS:=nasm
+ASFLAGS:=-f elf32
+LD:=ld
+LDFLAGS:=-m elf_i386 -n -T ${linker_script}
+GRUBMK:=grub2-mkrescue
+GRUBMKFLAGS:=--compress=xz
 
 
-all: bootable
+.PHONY: all clean re run iso
 
-kernel: ${DIR_ISO_BOOT}/${KERNEL}
+all: ${kernel}
 
-grubconf:
-	@mkdir -p ${DIR_ISO_GRUBCONF}
-	sed 's/__kfs__/${KERNEL}/' ${DIR_ARCH}/${ARCH}/grub.cfg > ${DIR_ISO_GRUBCONF}/grub.cfg
+clean:
+	${RM} -r ${dir_build}
 
-${DIR_BUILD}/multiboot_header.o: ${DIR_ARCH}/${ARCH}/multiboot_header.asm
-	@mkdir -p ${DIR_BUILD}
-	${AS} ${ASFLAGS} -o $@ $^
+re: clean all
 
-${DIR_BUILD}/boot.o: ${DIR_ARCH}/${ARCH}/boot.asm
-	@mkdir -p ${DIR_BUILD}
-	${AS} ${ASFLAGS} -o $@ $^
+run: ${iso}
+	${qemu} -drive format=raw,file=${iso}
 
-${DIR_ISO_BOOT}/${KERNEL}: ${DIR_BUILD}/boot.o ${DIR_BUILD}/multiboot_header.o
-	@mkdir -p ${DIR_ISO_BOOT}
-	${LD} ${LDFLAGS} -o $@ $^
+${iso}: ${kernel} ${grub_cfg}
+	mkdir -p ${dir_iso_grub}
+	cp ${kernel} ${dir_iso_boot}/${kernelname}
+	sed 's/__kfs__/${kernelname}/' ${grub_cfg} > ${dir_iso_grub}/grub.cfg
+	${GRUBMK} ${GRUBMKFLAGS} -o ${iso} ${dir_iso}
 
-bootable: grubconf kernel
-	grub2-mkrescue --compress=xz -o ${KERNEL} ${DIR_ISO}
+${kernel}: ${assembly_object_files}
+	${LD} ${LDFLAGS} -o $@ ${assembly_object_files}
 
-run:
-	${QEMU} ${QEMUFLAGS} -drive format=raw,file=${KERNEL}
-
-clean: _clean
-
-fclean: _clean
-	${RM} ${KERNEL}
-
-_clean:
-	${RM} -r ${DIR_ISO} ${DIR_BUILD}
-
-re: fclean all
-
-
-.PHONY: all kernel grubconf bootable run clean fclean _clean re
+${dir_build}/${dir_arch}/${arch}/%.o: ${dir_arch}/${arch}/%.asm
+	@mkdir -p $(shell dirname $@)
+	${AS} ${ASFLAGS} $< -o $@
