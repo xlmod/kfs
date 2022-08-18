@@ -5,6 +5,8 @@
 
 use core::panic::PanicInfo;
 
+pub mod vga_buffer;
+
 #[no_mangle]
 pub extern fn kmain() {}
 
