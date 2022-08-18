@@ -46,6 +46,8 @@ LD:=ld
 LDFLAGS:=-m elf_i386 -n
 GRUBMK:=grub2-mkrescue
 GRUBMKFLAGS:=--compress=xz
+GRUBMOD:=--install-modules="normal multiboot2 part_gpt part_acorn part_apple\
+		part_bsd part_amiga part_dfly part_dvh part_plan part_sun part_sunpc"
 
 
 .PHONY: all clean re run release iso kernel_dev kernel_release
@@ -66,7 +68,7 @@ ${iso}: ${kernel} ${grub_cfg}
 	mkdir -p ${dir_iso_grub}
 	cp ${kernel} ${dir_iso_boot}/${kernelname}
 	sed 's/__kfs__/${kernelname}/' ${grub_cfg} > ${dir_iso_grub}/grub.cfg
-	${GRUBMK} ${GRUBMKFLAGS} -o ${iso} ${dir_iso}
+	${GRUBMK} ${GRUBMKFLAGS} ${GRUBMOD} -o ${iso} ${dir_iso}
 
 ${kernel}: ${rust_os_lib} ${assembly_object_files} ${linker_script}
 	${LD} ${LDFLAGS} -T ${linker_script} -o ${kernel} \
