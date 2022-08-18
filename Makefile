@@ -30,7 +30,9 @@ assembly_object_files:=$(patsubst ${dir_arch}/${arch}/%.asm, \
 					   ${assembly_source_files})
 
 target:=${arch}-kfs
-rust_os:=${dir_target}/${target}/debug/libkfs.a
+rust_os_dev:=${dir_target}/${target}/debug/libkfs.a
+rust_os_release:=${dir_target}/${target}/release/libkfs.a
+rust_os_lib:=${dir_build}/libkfs.a
 
 kernelname:=kfs-${version}
 kernel:=${dir_build}/${kernelname}.bin
@@ -46,14 +48,16 @@ GRUBMK:=grub2-mkrescue
 GRUBMKFLAGS:=--compress=xz
 
 
-.PHONY: all clean re run iso
+.PHONY: all clean re run release iso kernel_dev kernel_release
 
-all: ${kernel}
+all: kernel_dev ${kernel}
 
 clean:
 	${RM} -r ${dir_build} ${dir_target}
 
 re: clean all
+
+release: kernel_release ${kernel}
 
 run: ${iso}
 	${qemu} -drive format=raw,file=${iso}
@@ -64,12 +68,19 @@ ${iso}: ${kernel} ${grub_cfg}
 	sed 's/__kfs__/${kernelname}/' ${grub_cfg} > ${dir_iso_grub}/grub.cfg
 	${GRUBMK} ${GRUBMKFLAGS} -o ${iso} ${dir_iso}
 
-${kernel}: kernel ${rust_os} ${assembly_object_files} ${linker_script}
+${kernel}: ${rust_os_lib} ${assembly_object_files} ${linker_script}
 	${LD} ${LDFLAGS} -T ${linker_script} -o ${kernel} \
-		${assembly_object_files} ${rust_os}
+		${assembly_object_files} ${rust_os_lib}
 
-kernel:
+kernel_dev:
+	@mkdir -p ${dir_build}
 	RUST_TARGET_PATH=$(shell pwd) xargo build --target ${target}
+	cp --remove-destination ${rust_os_dev} ${rust_os_lib}
+
+kernel_release:
+	@mkdir -p ${dir_build}
+	RUST_TARGET_PATH=$(shell pwd) xargo build --release --target ${target}
+	cp --remove-destination ${rust_os_release} ${rust_os_lib}
 
 ${dir_build}/${dir_arch}/${arch}/%.o: ${dir_arch}/${arch}/%.asm
 	@mkdir -p $(shell dirname $@)
