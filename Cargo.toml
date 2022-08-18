@@ -1,0 +1,7 @@
+[package]
+name = "kfs"
+version = "0.1.0"
+author = ["Gabriel LT <glafond-@student.42.fr>"]
+
+[lib]
+crate-type = ["staticlib"]
