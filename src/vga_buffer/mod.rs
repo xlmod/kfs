@@ -3,6 +3,7 @@ use core::{ptr::Unique, fmt};
 
 pub mod color;
 mod writer;
+pub mod cursor;
 
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
