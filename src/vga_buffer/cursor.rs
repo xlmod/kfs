@@ -58,7 +58,7 @@ impl Cursor {
 
     /// Return the color code in u8 version.
     pub fn get_color_code_u8(&self) -> color::ColorCodeU8 {
-        self.get_color_code_u8()
+        self.color_code.get_color_code_u8()
     }
 
     /// Return the color code struct.
