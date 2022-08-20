@@ -1,11 +1,12 @@
 
 # INFO
-version:=0.1.0
+version:=0.2.0
 arch:=i386
 
 
 # RUN VAR
 qemu:=qemu-system-i386
+qemu_flags:=
 
 
 # DIRECTORY SOURCE
@@ -62,7 +63,7 @@ re: clean all
 release: kernel_release ${kernel}
 
 run: ${iso}
-	${qemu} -drive format=raw,file=${iso}
+	${qemu} -drive format=raw,file=${iso} ${qemu_flags}
 
 ${iso}: ${kernel} ${grub_cfg}
 	mkdir -p ${dir_iso_grub}
