@@ -1,5 +1,7 @@
 
 
+use core::mem::transmute;
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -24,44 +26,32 @@ pub enum Color {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
-pub struct ColorCodeU8(u8);
+pub struct ColorCode(u8);
 
-impl ColorCodeU8 {
+impl ColorCode {
     pub const fn new(fg: Color, bg: Color) -> Self {
         Self ((bg as u8) << 4 | (fg as u8))
     }
 
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ColorCode {
-    fg: Color,
-    bg: Color,
-    color_code_u8: ColorCodeU8,
-}
-
-impl ColorCode {
-    pub const fn new(fg: Color, bg: Color) -> Self {
-        Self {
-            fg,
-            bg,
-            color_code_u8: ColorCodeU8::new(fg, bg),
+    pub fn set_foreground(&mut self, fg: Color) {
+        unsafe {
+            let color = transmute::<ColorCode, u8>(self.clone());
+            *self = transmute::
+                <u8, ColorCode>((color & 0xf0) | ((fg as u8) & 0x0f));
         }
     }
 
-    pub fn set_foreground(&mut self, fg: Color) {
-        self.fg = fg;
-        self.color_code_u8 = ColorCodeU8::new(self.fg, self.bg);
-    }
-
     pub fn set_background(&mut self, bg: Color) {
-        self.bg = bg;
-        self.color_code_u8 = ColorCodeU8::new(self.fg, self.bg);
+        unsafe {
+            let color = transmute::<ColorCode, u8>(self.clone());
+            *self = transmute::
+                <u8, ColorCode>(((bg as u8) << 4) | (color & 0x0f));
+        }
     }
+}
 
-    pub fn get_color_code_u8(&mut self) -> ColorCodeU8 {
-        self.color_code_u8
+impl Default for ColorCode {
+    fn default() -> Self {
+        Self::new(Color::LightGray, Color::Black)
     }
-
-
 }

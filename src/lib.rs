@@ -10,18 +10,24 @@ use core::panic::PanicInfo;
 pub mod vga_buffer;
 use vga_buffer::color::Color;
 
+pub mod port;
+
 const VERSION: &str = "0.1.0";
+
+fn kinit() {
+    screen_clear!();
+    screen_setcolor!(Default::default());
+    kprintln!("Welcome on Kfs");
+    kprintln!("version: {}", VERSION);
+}
 
 #[no_mangle]
 pub extern fn kmain() {
-    clearscreen!();
-    kprintln!("Welcome on Kfs");
-    kprintln!("version: {}", VERSION);
-    kprintln!();
-    setbgcolor!(Color::White);
-    setfgcolor!(Color::Red);
-    kprintln!("End of Execution!");
+    kinit();
 }
 
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {loop{}}
+fn panic(info: &PanicInfo) -> ! {
+    kprintln!("{:?}", info);
+    loop{}
+}
