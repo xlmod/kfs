@@ -130,6 +130,7 @@ impl Writer {
     pub fn write_byte(&mut self, byte: u8) {
         match byte {
             b'\n' => self.new_line(),
+            b'\x08' => self.remove_char(),
             byte => {
                 let pos = self.vt[self.vt_index].cursor.get_pos();
                 let screen_char =
@@ -171,10 +172,11 @@ impl Writer {
         self.vt[self.vt_index].cursor = Cursor::default();
     }
 
-    fn copy_buffer(&mut self, buffer: Buffer) {
+    fn update_buffer(&mut self) {
         for row in 0..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
-                self.buffer().chars[row][col] = buffer.chars[row][col];
+                let screen_char = self.vt[self.vt_index].buffer.get(col, row);
+                self.buffer().set(col, row, screen_char);
             }
         }
     }
@@ -183,7 +185,7 @@ impl Writer {
         if index >= VT_NUMBER { () }
         self.vt[self.vt_index].cursor.disable();
         self.vt_index = index;
-        self.copy_buffer(self.vt[self.vt_index].buffer);
+        self.update_buffer();
         self.vt[self.vt_index].cursor.update();
         self.vt[self.vt_index].cursor.enable();
     }
@@ -210,6 +212,12 @@ impl Writer {
         self.vt[self.vt_index].cursor.update();
     }
 
+    fn remove_char(&mut self) {
+        self.vt[self.vt_index].cursor.dec();
+        self.write_byte(b' ');
+        self.vt[self.vt_index].cursor.dec();
+    }
+
     fn new_line(&mut self) {
         if self.vt[self.vt_index].cursor.get_pos().1 >= BUFFER_HEIGHT - 1 {
             for row in 1..BUFFER_HEIGHT {
@@ -225,8 +233,8 @@ impl Writer {
 
     fn clear_row(&mut self, row: usize) {
         for col in 0..BUFFER_WIDTH {
-            let buffer = self.buffer();
-            buffer.set_char(col, row, b' ');
+            self.buffer().set_char(col, row, b' ');
+            self.vt[self.vt_index].buffer.set_char(col, row, b' ');
         }
     }
 
