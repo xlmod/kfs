@@ -5,40 +5,40 @@ use super::port::Port;
 use core::hint::spin_loop;
 use core::mem::transmute;
 
-static KEY_TRANSLATION: [char; 58] = [
-    '\0',      '\x1b',    '1',       '2',
-    '3',       '4',       '5',       '6',
-    '7',       '8',       '9',       '0',
-    '-',       '=',       '\x08',    '\x09',
-    'q',       'w',       'e',       'r',
-    't',       'y',       'u',       'i',
-    'o',       'p',       '[',       ']',
-    '\x0a',    '\0',      'a',       's',
-    'd',       'f',       'g',       'h',
-    'j',       'k',       'l',       ';',
-    '\'',      '`',       '\0',      '\\',
-    'z',       'x',       'c',       'v',
-    'b',       'n',       'm',       ',',
-    '.',       '/',       '\0',      '\0',
-    '\0',      ' ',
+static KEY_TRANSLATION: [u8; 58] = [
+    b'\0',      b'\x1b',    b'1',       b'2',
+    b'3',       b'4',       b'5',       b'6',
+    b'7',       b'8',       b'9',       b'0',
+    b'-',       b'=',       b'\x08',    b'\x09',
+    b'q',       b'w',       b'e',       b'r',
+    b't',       b'y',       b'u',       b'i',
+    b'o',       b'p',       b'[',       b']',
+    b'\x0a',    b'\0',      b'a',       b's',
+    b'd',       b'f',       b'g',       b'h',
+    b'j',       b'k',       b'l',       b';',
+    b'\'',      b'`',       b'\0',      b'\\',
+    b'z',       b'x',       b'c',       b'v',
+    b'b',       b'n',       b'm',       b',',
+    b'.',       b'/',       b'\0',      b'\0',
+    b'\0',      b' ',
 ];
 
-static KEY_CAP_TRANSLATION: [char; 58] = [
-    '\0',      '\x1b',    '!',       '@',
-    '#',       '$',       '%',       '^',
-    '&',       '*',       '(',       ')',
-    '_',       '+',       '\x08',    '\x09',
-    'Q',       'W',       'E',       'R',
-    'T',       'Y',       'U',       'I',
-    'O',       'P',       '{',       '}',
-    '\x0a',    '\0',      'A',       'S',
-    'D',       'F',       'G',       'H',
-    'J',       'K',       'L',       ':',
-    '"',       '~',       '\0',      '|',
-    'Z',       'X',       'C',       'V',
-    'B',       'N',       'M',       '<',
-    '>',       '?',       '\0',      '\0',
-    '\0',      ' ',
+static KEY_CAP_TRANSLATION: [u8; 58] = [
+    b'\0',      b'\x1b',    b'!',       b'@',
+    b'#',       b'$',       b'%',       b'^',
+    b'&',       b'*',       b'(',       b')',
+    b'_',       b'+',       b'\x08',    b'\x09',
+    b'Q',       b'W',       b'E',       b'R',
+    b'T',       b'Y',       b'U',       b'I',
+    b'O',       b'P',       b'{',       b'}',
+    b'\x0a',    b'\0',      b'A',       b'S',
+    b'D',       b'F',       b'G',       b'H',
+    b'J',       b'K',       b'L',       b':',
+    b'"',       b'~',       b'\0',      b'|',
+    b'Z',       b'X',       b'C',       b'V',
+    b'B',       b'N',       b'M',       b'<',
+    b'>',       b'?',       b'\0',      b'\0',
+    b'\0',      b' ',
 ];
 
 /// Represent a modifier key.
@@ -76,6 +76,7 @@ impl KeyModifier {
     }
 
     /// Reset the modifier.
+    #[allow(dead_code)]
     fn reset_modifier(&mut self, modifier: Modifier) {
         unsafe {
             let modifiers = transmute::<Self, u8>(self.clone());
@@ -96,7 +97,7 @@ impl KeyModifier {
 /// Used to return a ascii_character and current global KeyModifier.
 pub struct Key {
     /// Ascii value of a character.
-    pub ascii_character: char,
+    pub ascii_character: u8,
     /// Global key modifiers.
     pub modifier: KeyModifier,
 }
@@ -107,7 +108,7 @@ impl Key {
     pub fn get_key() -> Self {
         let ascii_character = loop {
             let scancode = Key::get_scancode();
-            let key_translation: &[char; 58];
+            let key_translation: &[u8; 58];
             unsafe {
                 if (KEYMODIFIER.is_set(Modifier::LeftShift) ||
                         KEYMODIFIER.is_set(Modifier::RightShift)) &&
@@ -134,15 +135,24 @@ impl Key {
                     0x36 => KEYMODIFIER.set_modifier(Modifier::RightShift),
                     0x38 => KEYMODIFIER.set_modifier(Modifier::LeftAlt),
                     0x39 => break key_translation[scancode as usize],
-                    0x3A => KEYMODIFIER.set_modifier(Modifier::CapsLock),
+                    0x3A => {
+                        if KEYMODIFIER.is_set(Modifier::CapsLock) {
+                            KEYMODIFIER.reset_modifier(Modifier::CapsLock);
+                        } else {
+                            KEYMODIFIER.set_modifier(Modifier::CapsLock);
+                        }
+                    },
                     0xE0 => {match Key::get_scancode() {
-                        0x1D => KEYMODIFIER.set_modifier(Modifier::LeftCtrl),
-                        0x2A => KEYMODIFIER.set_modifier(Modifier::LeftShift),
-                        0x36 => KEYMODIFIER.set_modifier(Modifier::RightShift),
-                        0x38 => KEYMODIFIER.set_modifier(Modifier::LeftAlt),
-                        0x3A => KEYMODIFIER.set_modifier(Modifier::CapsLock),
+                        0x1D => KEYMODIFIER.set_modifier(Modifier::RightCtrl),
+                        0x38 => KEYMODIFIER.set_modifier(Modifier::RightAlt),
+                        0x9D => KEYMODIFIER.reset_modifier(Modifier::RightCtrl),
+                        0xB8 => KEYMODIFIER.reset_modifier(Modifier::RightAlt),
                         _ => continue,
                     }},
+                    0x9D => KEYMODIFIER.reset_modifier(Modifier::LeftCtrl),
+                    0xAA => KEYMODIFIER.reset_modifier(Modifier::LeftShift),
+                    0xB6 => KEYMODIFIER.reset_modifier(Modifier::RightShift),
+                    0xB8 => KEYMODIFIER.reset_modifier(Modifier::LeftAlt),
                     _ => continue,
                 };
             }
