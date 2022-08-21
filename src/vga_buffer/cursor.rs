@@ -81,6 +81,20 @@ impl Cursor {
         }
     }
 
+    /// Decrement the cursor by 1 character.
+    ///
+    /// If it's the first line and the first character nothing is done.
+    pub fn dec(&mut self) {
+        if self.x == 0 {
+            if self.y > 0 {
+                self.y -= 1;
+                self.x = BUFFER_WIDTH - 1;
+            }
+        } else {
+            self.x -= 1;
+        }
+    }
+
     /// Put cursor on next line
     ///
     /// Set x to 0 and add one to y if it's not the last line.
