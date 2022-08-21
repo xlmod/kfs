@@ -45,6 +45,7 @@ pub fn help() {
     kprintln!("info         - print information of the kernel");
     kprintln!("read_serial  - print all bytes in serial port");
     kprintln!("write_serial - read and send to serial port");
+    kprintln!("echo         - print on terminal all arguments")
 }
 
 /// Exit the shell.
@@ -94,5 +95,13 @@ pub fn write_serial() {
                 kdebug!("{}", from_utf8(&[key.ascii_character]).unwrap());
             }
         }
+    }
+}
+
+/// Print all args.
+pub fn echo(args: &[&str]) {
+    kprintln!("nb argument: {}", args.len());
+    for (i, s) in args.iter().enumerate() {
+        kprintln!("{}: '{}'", i, s);
     }
 }

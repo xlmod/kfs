@@ -9,6 +9,7 @@ use crate::{
 mod command;
 
 const CMD_SIZE: usize = 1024;
+const MAX_ARG: usize = 20;
 
 struct Command {
     buffer: [u8; 1024],
@@ -54,7 +55,16 @@ pub fn kshell() {
         let mut cmd = Command::new();
         kprint!("kshell# ");
         cmd.read();
-        match cmd.get() {
+        let list_arg  = cmd.buffer[0..cmd.index].split(|num| *num == 32);
+        let mut nb_arg: usize = 0;
+        let mut args: [&str; MAX_ARG] = [""; MAX_ARG];
+        for (i, b) in list_arg.clone().enumerate() {
+            if i < MAX_ARG && b.len() != 0 {
+                args[nb_arg] = from_utf8(&b).unwrap();
+                nb_arg += 1;
+            }
+        }
+        match args[0] {
             "exit" => { command::exit(); break},
             "shutdown" => command::shutdown(),
             "reboot" => command::reboot(),
@@ -64,6 +74,7 @@ pub fn kshell() {
             "info" => command::info(),
             "read_serial" => command::read_serial(),
             "write_serial" => command::write_serial(),
+            "echo" => command::echo(&args[1..nb_arg]),
             _ => {},
         }
     }
