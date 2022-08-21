@@ -6,7 +6,7 @@ arch:=i386
 
 # RUN VAR
 qemu:=qemu-system-i386
-qemu_flags:=
+qemu_flags:=-serial stdio
 
 
 # DIRECTORY SOURCE

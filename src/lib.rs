@@ -8,22 +8,26 @@
 use core::panic::PanicInfo;
 
 pub mod vga_buffer;
-use vga_buffer::color::Color;
-
+pub mod keyboard;
 pub mod port;
+pub mod kshell;
+pub mod serial;
 
-const VERSION: &str = "0.1.0";
+const VERSION: &str = "0.2.0";
 
 fn kinit() {
     screen_clear!();
     screen_setcolor!(Default::default());
-    kprintln!("Welcome on Kfs");
-    kprintln!("version: {}", VERSION);
+    unsafe { serial::SERIAL.init() };
+    kdebugln!("[OK] Seriel port initialized!")
 }
 
 #[no_mangle]
 pub extern fn kmain() {
     kinit();
+    loop {
+        kshell::kshell()
+    };
 }
 
 #[panic_handler]
