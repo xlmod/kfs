@@ -15,7 +15,8 @@ impl PortRead for u8 {
     #[inline]
     unsafe fn read_from_port(port: u16) -> u8 {
         let value: u8;
-            asm!("in al, dx", out("al") value, in("dx") port, options(nomem, nostack, preserves_flags));
+            asm!("in al, dx", out("al") value, in("dx") port,
+                options(nomem, nostack, preserves_flags));
         value
     }
 }
@@ -24,7 +25,8 @@ impl PortRead for u16 {
     #[inline]
     unsafe fn read_from_port(port: u16) -> u16 {
         let value: u16;
-            asm!("in ax, dx", out("ax") value, in("dx") port, options(nomem, nostack, preserves_flags));
+            asm!("in ax, dx", out("ax") value, in("dx") port,
+                options(nomem, nostack, preserves_flags));
         value
     }
 }
@@ -33,7 +35,8 @@ impl PortRead for u32 {
     #[inline]
     unsafe fn read_from_port(port: u16) -> u32 {
         let value: u32;
-            asm!("in eax, dx", out("eax") value, in("dx") port, options(nomem, nostack, preserves_flags));
+            asm!("in eax, dx", out("eax") value, in("dx") port,
+                options(nomem, nostack, preserves_flags));
         value
     }
 }
@@ -41,21 +44,24 @@ impl PortRead for u32 {
 impl PortWrite for u8 {
     #[inline]
     unsafe fn write_to_port(port: u16, value: u8) {
-            asm!("out dx, al", in("dx") port, in("al") value, options(nomem, nostack, preserves_flags));
+            asm!("out dx, al", in("dx") port, in("al") value,
+                options(nomem, nostack, preserves_flags));
     }
 }
 
 impl PortWrite for u16 {
     #[inline]
     unsafe fn write_to_port(port: u16, value: u16) {
-            asm!("out dx, ax", in("dx") port, in("ax") value, options(nomem, nostack, preserves_flags));
+            asm!("out dx, ax", in("dx") port, in("ax") value,
+                options(nomem, nostack, preserves_flags));
     }
 }
 
 impl PortWrite for u32 {
     #[inline]
     unsafe fn write_to_port(port: u16, value: u32) {
-            asm!("out dx, eax", in("dx") port, in("eax") value, options(nomem, nostack, preserves_flags));
+            asm!("out dx, eax", in("dx") port, in("eax") value,
+                options(nomem, nostack, preserves_flags));
     }
 }
 
@@ -72,7 +78,8 @@ pub trait PortReadAccess: sealed::Access {}
 /// A maker trait for access types which allow writing port value.
 pub trait PortWriteAccess: sealed::Access {}
 
-/// An access maker type indicating that a port is only allowed to read values.
+/// An access maker type indicating that a port is only allowed to read
+/// values.
 #[derive(Debug)]
 pub struct ReadOnlyAccess(());
 
@@ -81,7 +88,8 @@ impl sealed::Access for ReadOnlyAccess {
 }
 impl PortReadAccess for ReadOnlyAccess {}
 
-/// An access maker type indicating that a port is only allowed to write values.
+/// An access maker type indicating that a port is only allowed to write
+/// values.
 #[derive(Debug)]
 pub struct WriteOnlyAccess(());
 
@@ -90,7 +98,8 @@ impl sealed::Access for WriteOnlyAccess {
 }
 impl PortWriteAccess for WriteOnlyAccess {}
 
-/// An access maker type indicating that a port is only allowed to read or write
+/// An access maker type indicating that a port is only allowed to read or
+/// write
 /// values.
 #[derive(Debug)]
 pub struct ReadWriteAccess(());
@@ -106,7 +115,8 @@ impl PortWriteAccess for ReadWriteAccess {}
 /// The port reads or writes values of type `T` and has read/write access
 /// specified by `A`
 ///
-/// Use provided marker types (with phantom) to get a port type with differente
+/// Use provided marker types (with phantom) to get a port type with
+/// differente
 /// access.
 /// * `PortGeneric<T, ReadWriteAccess>` -> `Port<T>`
 /// * `PortGeneric<T, ReadOnlyAccess>` -> `PortReadOnly<T>`
@@ -127,7 +137,7 @@ pub type PortWriteOnly<T> = PortGeneric<T, WriteOnlyAccess>;
 
 impl<T, A> PortGeneric<T, A> {
     /// Creates an I/O port with the given port number.
-    pub fn new(port: u16) -> Self {
+    pub const fn new(port: u16) -> Self {
         Self {
             port,
             phantom: PhantomData,
