@@ -2,12 +2,15 @@
 
 use core::fmt;
 
-use crate::port::{
-    Port,
-    PortWriteOnly,
+use crate::{
+    port::{
+        Port,
+        PortWriteOnly,
+    },
+    spinlock::Spinlock,
 };
 
-pub static mut SERIAL: Serial = Serial::new(0x3f8);
+pub static mut SERIAL: Spinlock<Serial> = Spinlock::new(Serial::new(0x3f8));
 
 pub struct Serial {
     port0: Port<u8>,
@@ -92,6 +95,7 @@ macro_rules! kdebugln {
 #[doc(hidden)]
 pub fn _debug(args: fmt::Arguments) {
     use core::fmt::Write;
-    unsafe {SERIAL.write_fmt(args).unwrap();}
+    // TODO Remove interupt during lock to avoid dead lock.
+    unsafe {SERIAL.lock().write_fmt(args).unwrap();}
 }
 

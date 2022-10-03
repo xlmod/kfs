@@ -2,6 +2,8 @@
 
 use core::marker::PhantomData;
 
+use crate::spinlock::Spinlock;
+
 mod scancode;
 pub use self::scancode::ScancodeSet1;
 
@@ -10,7 +12,7 @@ pub use self::layout::Us104Key;
 
 // STATIC
 
-pub static mut KEYBOARD: Keyboard<Us104Key, ScancodeSet1> = Keyboard {
+pub static mut KEYBOARD: Spinlock<Keyboard<Us104Key, ScancodeSet1>> = Spinlock::new(Keyboard {
             decode_state: DecodeState::Start,
             handle_ctrl: HandleCtrl::Ignore,
             modifiers: Modifiers {
@@ -24,7 +26,7 @@ pub static mut KEYBOARD: Keyboard<Us104Key, ScancodeSet1> = Keyboard {
             },
             _layout: PhantomData,
             _set: PhantomData,
-};
+});
 
 
 // STRUCT and ENUM

@@ -1,6 +1,6 @@
 
 use core::str::from_utf8;
-use core::hint::spin_loop;
+
 use crate::{
     keyboard::{
         KEYBOARD,
@@ -35,35 +35,39 @@ impl Command {
         from_utf8(&self.buffer[0..self.index]).unwrap()
     }
 
+    fn get_key(&mut self, scancode: u8) -> Option<DecodedKey> {
+        // TODO Remove interupt during lock to avoid dead lock.
+        let mut keyboard_lock = unsafe { KEYBOARD.lock() };
+        if let Ok(Some(key_event)) = keyboard_lock.add_byte(scancode) {
+            match key_event {
+                KeyEvent {
+                    code: KeyCode::AltLeft,
+                    state: KeyState::Down,
+                } => {
+                    self.modkey = true;
+                    None
+                },
+                KeyEvent {
+                    code: KeyCode::AltLeft,
+                    state: KeyState::Up,
+                } => {
+                    self.modkey = false;
+                    None
+                },
+                ev => keyboard_lock.process_keyevent(ev),
+            }
+        } else { None }
+    }
+
     fn read(&mut self) -> bool {
         loop {
             let mut keyboard_cmd = PortReadOnly::<u8>::new(0x64);
             let mut keyboard_data = PortReadOnly::<u8>::new(0x60);
             while unsafe { keyboard_cmd.read() } & 1 != 1 {
-                spin_loop();
+                core::hint::spin_loop();
             }
             let scancode = unsafe { keyboard_data.read() };
-            let mut key: Option<DecodedKey> = None;
-            if let Ok(Some(key_event)) = unsafe { KEYBOARD.add_byte(scancode) } {
-                match key_event {
-                    KeyEvent {
-                        code: KeyCode::AltLeft,
-                        state: KeyState::Down,
-                    } => {
-                        self.modkey = true;
-                        key = None;
-                    },
-                    KeyEvent {
-                        code: KeyCode::AltLeft,
-                        state: KeyState::Up,
-                    } => {
-                        self.modkey = false;
-                        key = None;
-                    },
-                    ev => key = unsafe { KEYBOARD.process_keyevent(ev) },
-                }
-            }
-            if let Some(k) = key {
+            if let Some(k) = self.get_key(scancode) {
                 match k {
                     DecodedKey::Unicode(c) => {
                         match c {

@@ -46,9 +46,10 @@ impl ScancodeSet for ScancodeSet1 {
                     },
                 }
             },
-            _ => {
-                unimplemented!();
-            }
+            // When implemente other scancode set with other decode state.
+            //_ => {
+            //    unimplemented!();
+            //}
         }
     }
 

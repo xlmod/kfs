@@ -10,8 +10,6 @@ use crate::{
     vga_buffer::color::{Color, ColorCode},
     screen_setcolor,
     kprint,
-    kdebug,
-    kdebugln,
 };
 
 /// Shutdown qemu system.
@@ -72,7 +70,8 @@ pub fn read_serial() {
     use core::str::from_utf8;
     unsafe {
         loop {
-            let b = match crate::serial::SERIAL.read_byte() {
+            // TODO Remove interupt during lock to avoid dead lock.
+            let b = match crate::serial::SERIAL.lock().read_byte() {
                 Some(b) => b,
                 None => break,
             };

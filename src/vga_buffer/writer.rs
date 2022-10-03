@@ -2,6 +2,8 @@
 use core::ptr::Unique;
 use core::fmt;
 
+use crate::spinlock::Spinlock;
+
 use super::{
     BUFFER_WIDTH,
     BUFFER_HEIGHT,
@@ -99,11 +101,11 @@ impl Vt {
 
 }
 
-pub static mut WRITER: Writer = Writer {
+pub static mut WRITER: Spinlock<Writer> = Spinlock::new(Writer {
     vt_index: 0,
     vt: [Vt::new(); VT_NUMBER],
     buffer: unsafe { Unique::new_unchecked(0xb8000 as *mut _)},
-};
+});
 
 pub const VT_NUMBER: usize = 2;
 
