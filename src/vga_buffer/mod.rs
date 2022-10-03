@@ -67,6 +67,13 @@ macro_rules! screen_next {
 }
 
 #[macro_export]
+macro_rules! screen_prev {
+    () => (unsafe {
+        crate::vga_buffer::writer::WRITER.prev_screen()
+    });
+}
+
+#[macro_export]
 macro_rules! screen_set {
     ($i:expr) => (unsafe {
         crate::vga_buffer::writer::WRITER.change_screen(i) 

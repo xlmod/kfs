@@ -3,6 +3,7 @@ use crate::{
     port::Port,
     screen_clear,
     screen_next,
+    screen_prev,
     kprintln,
     screen_setfgcolor,
     screen_setbgcolor,
@@ -35,6 +36,11 @@ pub fn next_vt() {
     screen_next!();
 }
 
+/// Go to the previous virtual terminal.
+pub fn prev_vt() {
+    screen_prev!();
+}
+
 /// Print the list of commands.
 pub fn help() {
     kprintln!("exit         - quit the shell");
@@ -42,9 +48,9 @@ pub fn help() {
     kprintln!("reboot       - reboot the system");
     kprintln!("clear        - clear the screen");
     kprintln!("next         - go to the next virtual terminal");
+    kprintln!("prev         - go to the previous virtual terminal");
     kprintln!("info         - print information of the kernel");
     kprintln!("read_serial  - print all bytes in serial port");
-    kprintln!("write_serial - read and send to serial port");
     kprintln!("echo         - print on terminal all arguments")
 }
 
@@ -74,28 +80,6 @@ pub fn read_serial() {
         }
     }
     kprintln!();
-}
-
-/// Print to serial port.
-pub fn write_serial() {
-    use core::str::from_utf8;
-    use crate::keyboard;
-
-    loop {
-        let key = keyboard::Key::get_key();
-        match key.ascii_character {
-            b'\n' => {
-                kprintln!();
-                kdebugln!();
-                break
-            },
-            b'\x08' => {},
-            _ => {
-                kprint!("{}", from_utf8(&[key.ascii_character]).unwrap());
-                kdebug!("{}", from_utf8(&[key.ascii_character]).unwrap());
-            }
-        }
-    }
 }
 
 /// Print all args.

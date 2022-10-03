@@ -200,6 +200,16 @@ impl Writer {
         self.change_screen(index);
     }
 
+    pub fn prev_screen(&mut self) {
+        let index: usize;
+        if self.vt_index == 0 {
+            index = VT_NUMBER - 1;
+        } else {
+            index = self.vt_index - 1;
+        }
+        self.change_screen(index);
+    }
+
     pub fn cursor_enable(&self) {
         self.vt[self.vt_index].cursor.enable();
     }

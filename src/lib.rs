@@ -13,7 +13,7 @@ pub mod port;
 pub mod kshell;
 pub mod serial;
 
-const VERSION: &str = "0.2.0";
+const VERSION: &str = "0.3.0";
 
 fn kinit() {
     screen_clear!();
