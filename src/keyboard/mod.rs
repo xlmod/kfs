@@ -1,5 +1,3 @@
-
-
 use core::marker::PhantomData;
 
 use crate::spinlock::Spinlock;
@@ -13,27 +11,25 @@ pub use self::layout::Us104Key;
 // STATIC
 
 pub static mut KEYBOARD: Spinlock<Keyboard<Us104Key, ScancodeSet1>> = Spinlock::new(Keyboard {
-            decode_state: DecodeState::Start,
-            handle_ctrl: HandleCtrl::Ignore,
-            modifiers: Modifiers {
-                lshift: false,
-                rshift: false,
-                lctrl: false,
-                rctrl: false,
-                numlock: false,
-                capslock: false,
-                alt_gr: false,
-            },
-            _layout: PhantomData,
-            _set: PhantomData,
+    decode_state: DecodeState::Start,
+    handle_ctrl: HandleCtrl::Ignore,
+    modifiers: Modifiers {
+        lshift: false,
+        rshift: false,
+        lctrl: false,
+        rctrl: false,
+        numlock: false,
+        capslock: false,
+        alt_gr: false,
+    },
+    _layout: PhantomData,
+    _set: PhantomData,
 });
-
 
 // STRUCT and ENUM
 
 #[derive(Debug)]
 pub struct Keyboard<T, S> {
-
     decode_state: DecodeState,
     handle_ctrl: HandleCtrl,
     modifiers: Modifiers,
@@ -41,7 +37,6 @@ pub struct Keyboard<T, S> {
     _layout: PhantomData<T>,
     _set: PhantomData<S>,
 }
-
 
 /// Indicates differente error condition
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
@@ -200,22 +195,14 @@ pub enum HandleCtrl {
 // TRAITS
 
 pub trait ScancodeSet {
-
     fn advance_state(state: &mut DecodeState, code: u8) -> Result<Option<KeyEvent>, Error>;
 
     fn map_scancode(code: u8) -> Result<KeyCode, Error>;
     fn map_extended_scancode(code: u8) -> Result<KeyCode, Error>;
-
 }
 
 pub trait KeyboardLayout {
-
-    fn map_keycode(
-        keycode: KeyCode,
-        modifier: &Modifiers,
-        handle_ctrl: HandleCtrl,
-    ) -> DecodedKey;
-
+    fn map_keycode(keycode: KeyCode, modifier: &Modifiers, handle_ctrl: HandleCtrl) -> DecodedKey;
 }
 
 // IMPLEMENTATIONS
@@ -225,7 +212,6 @@ where
     T: KeyboardLayout,
     S: ScancodeSet,
 {
-
     pub fn new(_layout: T, _set: S, handle_ctrl: HandleCtrl) -> Self {
         Self {
             decode_state: DecodeState::Start,
@@ -257,104 +243,100 @@ where
             } => {
                 self.modifiers.lshift = true;
                 None
-            },
+            }
             KeyEvent {
                 code: KeyCode::ShiftRight,
                 state: KeyState::Down,
             } => {
                 self.modifiers.rshift = true;
                 None
-            },
+            }
             KeyEvent {
                 code: KeyCode::ShiftLeft,
                 state: KeyState::Up,
             } => {
                 self.modifiers.lshift = false;
                 None
-            },
+            }
             KeyEvent {
                 code: KeyCode::ShiftRight,
                 state: KeyState::Up,
             } => {
                 self.modifiers.rshift = false;
                 None
-            },
+            }
             KeyEvent {
                 code: KeyCode::CapsLock,
                 state: KeyState::Down,
             } => {
                 self.modifiers.capslock = !self.modifiers.capslock;
                 None
-            },
+            }
             KeyEvent {
                 code: KeyCode::NumpadLock,
                 state: KeyState::Down,
             } => {
                 self.modifiers.numlock = !self.modifiers.numlock;
                 None
-            },
+            }
             KeyEvent {
                 code: KeyCode::CtrlLeft,
                 state: KeyState::Down,
             } => {
                 self.modifiers.lctrl = true;
                 None
-            },
+            }
             KeyEvent {
                 code: KeyCode::CtrlRight,
                 state: KeyState::Down,
             } => {
                 self.modifiers.rctrl = true;
                 None
-            },
+            }
             KeyEvent {
                 code: KeyCode::CtrlLeft,
                 state: KeyState::Up,
             } => {
                 self.modifiers.lctrl = false;
                 None
-            },
+            }
             KeyEvent {
                 code: KeyCode::CtrlRight,
                 state: KeyState::Up,
             } => {
                 self.modifiers.rctrl = false;
                 None
-            },
+            }
             KeyEvent {
                 code: KeyCode::AltRight,
                 state: KeyState::Down,
             } => {
                 self.modifiers.alt_gr = true;
                 None
-            },
+            }
             KeyEvent {
                 code: KeyCode::AltRight,
                 state: KeyState::Up,
             } => {
                 self.modifiers.alt_gr = false;
                 None
-            },
+            }
             KeyEvent {
                 code: c,
-                state: KeyState::Down
+                state: KeyState::Down,
             } => Some(T::map_keycode(c, &self.modifiers, self.handle_ctrl)),
             _ => None,
         }
     }
-
 }
 
 impl KeyEvent {
-
     fn new(code: KeyCode, state: KeyState) -> Self {
         Self { code, state }
     }
-
 }
 
 impl Modifiers {
-
     pub fn is_ctrl(&self) -> bool {
         self.lctrl | self.rctrl
     }
@@ -366,5 +348,4 @@ impl Modifiers {
     pub fn is_caps(&self) -> bool {
         (self.lshift | self.rshift) ^ self.capslock
     }
-
 }

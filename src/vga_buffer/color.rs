@@ -1,5 +1,3 @@
-
-
 use core::mem::transmute;
 
 #[allow(dead_code)]
@@ -30,22 +28,20 @@ pub struct ColorCode(u8);
 
 impl ColorCode {
     pub const fn new(fg: Color, bg: Color) -> Self {
-        Self ((bg as u8) << 4 | (fg as u8))
+        Self((bg as u8) << 4 | (fg as u8))
     }
 
     pub fn set_foreground(&mut self, fg: Color) {
         unsafe {
             let color = transmute::<ColorCode, u8>(self.clone());
-            *self = transmute::
-                <u8, ColorCode>((color & 0xf0) | ((fg as u8) & 0x0f));
+            *self = transmute::<u8, ColorCode>((color & 0xf0) | ((fg as u8) & 0x0f));
         }
     }
 
     pub fn set_background(&mut self, bg: Color) {
         unsafe {
             let color = transmute::<ColorCode, u8>(self.clone());
-            *self = transmute::
-                <u8, ColorCode>(((bg as u8) << 4) | (color & 0x0f));
+            *self = transmute::<u8, ColorCode>(((bg as u8) << 4) | (color & 0x0f));
         }
     }
 }

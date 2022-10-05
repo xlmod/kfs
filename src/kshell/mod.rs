@@ -1,17 +1,11 @@
-
 use core::str::from_utf8;
 
 use crate::{
-    keyboard::{
-        KEYBOARD,
-        DecodedKey,
-        KeyCode,
-        KeyEvent,
-        KeyState,
-    },
+    keyboard::{DecodedKey, KeyCode, KeyEvent, KeyState, KEYBOARD},
+    kprint, kprintln,
     port::PortReadOnly,
-    kprint,
-    kprintln,
+    screen_setcolor, screen_setfgcolor,
+    vga_buffer::color::{Color, ColorCode},
 };
 
 mod command;
@@ -27,7 +21,11 @@ struct Command {
 
 impl Command {
     fn new() -> Self {
-        Self { buffer: [0; 1024],index: 0, modkey: false}
+        Self {
+            buffer: [0; 1024],
+            index: 0,
+            modkey: false,
+        }
     }
 
     #[allow(dead_code)]
@@ -46,17 +44,19 @@ impl Command {
                 } => {
                     self.modkey = true;
                     None
-                },
+                }
                 KeyEvent {
                     code: KeyCode::AltLeft,
                     state: KeyState::Up,
                 } => {
                     self.modkey = false;
                     None
-                },
+                }
                 ev => keyboard_lock.process_keyevent(ev),
             }
-        } else { None }
+        } else {
+            None
+        }
     }
 
     fn read(&mut self) -> bool {
@@ -69,54 +69,72 @@ impl Command {
             let scancode = unsafe { keyboard_data.read() };
             if let Some(k) = self.get_key(scancode) {
                 match k {
-                    DecodedKey::Unicode(c) => {
-                        match c {
-                            '\x08' => {
-                                if self.index != 0 {
-                                    self.index -= 1;
-                                    self.buffer[self.index] = b'\x00';
-                                    kprint!("{}", c);
-                                }
-                            },
-                            '\x0a' => {
+                    DecodedKey::Unicode(c) => match c {
+                        '\x08' => {
+                            if self.index != 0 {
+                                self.index -= 1;
+                                self.buffer[self.index] = b'\x00';
                                 kprint!("{}", c);
-                                break true;
-                            },
-                            '\x09' => {},
-                            _ => {
-                                if self.index != CMD_SIZE {
-                                    self.buffer[self.index] = c.encode_utf8(&mut [0; 4]).as_bytes()[0];
-                                    self.index += 1;
-                                    kprint!("{}",c);
-                                }
-                            },
+                            }
+                        }
+                        '\x0a' => {
+                            kprint!("{}", c);
+                            break true;
+                        }
+                        '\x09' => {}
+                        _ => {
+                            if self.index != CMD_SIZE {
+                                self.buffer[self.index] = c.encode_utf8(&mut [0; 4]).as_bytes()[0];
+                                self.index += 1;
+                                kprint!("{}", c);
+                            }
+                        }
+                    },
+                    DecodedKey::RawKey(r) => {
+                        if self.shortcut(r) {
+                            break false;
                         }
                     }
-                    DecodedKey::RawKey(r) => { if self.shortcut(r) { break false; } },
                 }
             }
         }
     }
 
     fn shortcut(&self, key: KeyCode) -> bool {
+        if !self.modkey {
+            return false;
+        }
         match key {
-            KeyCode::ArrowRight => {kprintln!(); command::next_vt()},
-            KeyCode::ArrowLeft => {kprintln!(); command::prev_vt()},
+            KeyCode::ArrowRight => {
+                kprintln!("");
+                command::next_vt()
+            }
+            KeyCode::ArrowLeft => {
+                kprintln!("");
+                command::prev_vt()
+            }
             _ => return false,
         }
         return true;
     }
+}
 
+fn print_welcome() {
+    screen_setcolor!(ColorCode::default());
+    screen_setfgcolor!(Color::White);
+    kprintln!("Welcome to kfs-{}", crate::VERSION);
 }
 
 pub fn kshell() {
-    kprintln!("Welcome to Kfs-{}", crate::VERSION);
-    kprintln!();
+    print_welcome();
+    screen_setcolor!(ColorCode::default());
     loop {
         let mut cmd = Command::new();
         kprint!("kshell# ");
-        if !cmd.read() { continue }
-        let list_arg  = cmd.buffer[0..cmd.index].split(|num| *num == b' ');
+        if !cmd.read() {
+            continue;
+        }
+        let list_arg = cmd.buffer[0..cmd.index].split(|num| *num == b' ');
         let mut nb_arg: usize = 0;
         let mut args: [&str; MAX_ARG] = [""; MAX_ARG];
         for (i, b) in list_arg.clone().enumerate() {
@@ -126,7 +144,10 @@ pub fn kshell() {
             }
         }
         match args[0] {
-            "exit" => { command::exit(); break},
+            "exit" => {
+                command::exit();
+                break;
+            }
             "shutdown" => command::shutdown(),
             "reboot" => command::reboot(),
             "clear" => command::clear_vt(),
@@ -136,7 +157,7 @@ pub fn kshell() {
             "info" => command::info(),
             "read_serial" => command::read_serial(),
             "echo" => command::echo(&args[1..nb_arg]),
-            _ => {},
+            _ => {}
         }
     }
 }

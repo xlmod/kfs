@@ -1,4 +1,3 @@
-
 use core::fmt;
 
 pub mod color;
@@ -35,56 +34,70 @@ pub fn _print(args: fmt::Arguments) {
 
 #[macro_export]
 macro_rules! screen_setfgcolor {
-    ($fg:expr) => (unsafe {
-        // TODO Remove interupt during lock to avoid dead lock.
-        crate::vga_buffer::writer::WRITER.lock().set_foreground($fg)
-    });
+    ($fg:expr) => {
+        unsafe {
+            // TODO Remove interupt during lock to avoid dead lock.
+            crate::vga_buffer::writer::WRITER.lock().set_foreground($fg)
+        }
+    };
 }
 
 #[macro_export]
 macro_rules! screen_setbgcolor {
-    ($bg:expr) => (unsafe {
-        // TODO Remove interupt during lock to avoid dead lock.
-        crate::vga_buffer::writer::WRITER.lock().set_background($bg)
-    });
+    ($bg:expr) => {
+        unsafe {
+            // TODO Remove interupt during lock to avoid dead lock.
+            crate::vga_buffer::writer::WRITER.lock().set_background($bg)
+        }
+    };
 }
 
 #[macro_export]
 macro_rules! screen_setcolor {
-    ($cc:expr) => (unsafe {
-        // TODO Remove interupt during lock to avoid dead lock.
-        crate::vga_buffer::writer::WRITER.lock().set_color_code($cc)
-    });
+    ($cc:expr) => {
+        unsafe {
+            // TODO Remove interupt during lock to avoid dead lock.
+            crate::vga_buffer::writer::WRITER.lock().set_color_code($cc)
+        }
+    };
 }
 
 #[macro_export]
 macro_rules! screen_clear {
-    () => (unsafe {
-        // TODO Remove interupt during lock to avoid dead lock.
-        crate::vga_buffer::writer::WRITER.lock().clear()
-    });
+    () => {
+        unsafe {
+            // TODO Remove interupt during lock to avoid dead lock.
+            crate::vga_buffer::writer::WRITER.lock().clear()
+        }
+    };
 }
 
 #[macro_export]
 macro_rules! screen_next {
-    () => (unsafe {
-        // TODO Remove interupt during lock to avoid dead lock.
-        crate::vga_buffer::writer::WRITER.lock().next_screen()
-    });
+    () => {
+        unsafe {
+            // TODO Remove interupt during lock to avoid dead lock.
+            crate::vga_buffer::writer::WRITER.lock().next_screen()
+        }
+    };
 }
 
 #[macro_export]
 macro_rules! screen_prev {
-    () => (unsafe {
-        // TODO Remove interupt during lock to avoid dead lock.
-        crate::vga_buffer::writer::WRITER.lock().prev_screen()
-    });
+    () => {
+        unsafe {
+            // TODO Remove interupt during lock to avoid dead lock.
+            crate::vga_buffer::writer::WRITER.lock().prev_screen()
+        }
+    };
 }
 
 #[macro_export]
 macro_rules! screen_set {
-    ($i:expr) => (unsafe {
-        // TODO Remove interupt during lock to avoid dead lock.
-        crate::vga_buffer::writer::WRITER.lock().change_screen(i) 
-    });
+    ($i:expr) => {
+        unsafe {
+            // TODO Remove interupt during lock to avoid dead lock.
+            crate::vga_buffer::writer::WRITER.lock().change_screen(i)
+        }
+    };
 }

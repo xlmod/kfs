@@ -1,6 +1,5 @@
-
-use crate::vga_buffer::{BUFFER_WIDTH, BUFFER_HEIGHT};
 use crate::port;
+use crate::vga_buffer::{BUFFER_HEIGHT, BUFFER_WIDTH};
 
 /// Represent a cursor on a screen with a position (x, y).
 #[derive(Debug, Clone, Copy)]
@@ -12,7 +11,7 @@ pub struct Cursor {
 impl Cursor {
     /// Return a new cursor.
     pub const fn new(x: usize, y: usize) -> Self {
-        Self {x, y}
+        Self { x, y }
     }
 
     /// Enable the blinking cursor on the screen.
@@ -62,7 +61,7 @@ impl Cursor {
 
     /// Set the position of the cursor.
     #[allow(dead_code)]
-    pub fn set_pos(&mut self, x: usize, y:usize) {
+    pub fn set_pos(&mut self, x: usize, y: usize) {
         self.x = x;
         self.y = y;
     }
@@ -104,7 +103,6 @@ impl Cursor {
             self.y += 1;
         }
     }
-
 }
 
 impl Default for Cursor {

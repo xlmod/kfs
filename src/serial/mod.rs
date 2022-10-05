@@ -1,12 +1,7 @@
-
-
 use core::fmt;
 
 use crate::{
-    port::{
-        Port,
-        PortWriteOnly,
-    },
+    port::{Port, PortWriteOnly},
     spinlock::Spinlock,
 };
 
@@ -23,7 +18,6 @@ pub struct Serial {
 }
 
 impl Serial {
-
     pub const fn new(port: u16) -> Self {
         Self {
             port0: Port::new(port),
@@ -58,18 +52,21 @@ impl Serial {
 
     pub fn write_byte(&mut self, byte: u8) {
         unsafe {
-            while self.port5.read() & 0x20 == 0 {continue;}
+            while self.port5.read() & 0x20 == 0 {
+                continue;
+            }
             self.port0.write(byte);
         }
     }
 
     pub fn read_byte(&mut self) -> Option<u8> {
         unsafe {
-            while self.port5.read() & 0x1 == 0 {return None;}
+            while self.port5.read() & 0x1 == 0 {
+                return None;
+            }
             Some(self.port0.read())
         }
     }
-
 }
 
 impl fmt::Write for Serial {
@@ -96,6 +93,7 @@ macro_rules! kdebugln {
 pub fn _debug(args: fmt::Arguments) {
     use core::fmt::Write;
     // TODO Remove interupt during lock to avoid dead lock.
-    unsafe {SERIAL.lock().write_fmt(args).unwrap();}
+    unsafe {
+        SERIAL.lock().write_fmt(args).unwrap();
+    }
 }
-

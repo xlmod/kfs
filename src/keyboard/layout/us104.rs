@@ -1,22 +1,9 @@
-
-
-use crate::keyboard::{
-    DecodedKey,
-    KeyCode,
-    Modifiers,
-    HandleCtrl,
-    KeyboardLayout,
-};
+use crate::keyboard::{DecodedKey, HandleCtrl, KeyCode, KeyboardLayout, Modifiers};
 
 pub struct Us104Key;
 
 impl KeyboardLayout for Us104Key {
-
-    fn map_keycode(
-        keycode: KeyCode,
-        modifiers: &Modifiers,
-        handle_ctrl: HandleCtrl,
-    ) -> DecodedKey {
+    fn map_keycode(keycode: KeyCode, modifiers: &Modifiers, handle_ctrl: HandleCtrl) -> DecodedKey {
         let map_to_unicode = handle_ctrl == HandleCtrl::MapLetterToUnicode;
         match keycode {
             KeyCode::Escape => DecodedKey::Unicode(0x1B.into()),
@@ -26,91 +13,91 @@ impl KeyboardLayout for Us104Key {
                 } else {
                     DecodedKey::Unicode('`')
                 }
-            },
+            }
             KeyCode::Key1 => {
                 if modifiers.is_shifted() {
                     DecodedKey::Unicode('!')
                 } else {
                     DecodedKey::Unicode('1')
                 }
-            },
+            }
             KeyCode::Key2 => {
                 if modifiers.is_shifted() {
                     DecodedKey::Unicode('@')
                 } else {
                     DecodedKey::Unicode('2')
                 }
-            },
+            }
             KeyCode::Key3 => {
                 if modifiers.is_shifted() {
                     DecodedKey::Unicode('#')
                 } else {
                     DecodedKey::Unicode('3')
                 }
-            },
+            }
             KeyCode::Key4 => {
                 if modifiers.is_shifted() {
                     DecodedKey::Unicode('$')
                 } else {
                     DecodedKey::Unicode('4')
                 }
-            },
+            }
             KeyCode::Key5 => {
                 if modifiers.is_shifted() {
                     DecodedKey::Unicode('%')
                 } else {
                     DecodedKey::Unicode('5')
                 }
-            },
+            }
             KeyCode::Key6 => {
                 if modifiers.is_shifted() {
                     DecodedKey::Unicode('^')
                 } else {
                     DecodedKey::Unicode('6')
                 }
-            },
+            }
             KeyCode::Key7 => {
                 if modifiers.is_shifted() {
                     DecodedKey::Unicode('&')
                 } else {
                     DecodedKey::Unicode('7')
                 }
-            },
+            }
             KeyCode::Key8 => {
                 if modifiers.is_shifted() {
                     DecodedKey::Unicode('*')
                 } else {
                     DecodedKey::Unicode('8')
                 }
-            },
+            }
             KeyCode::Key9 => {
                 if modifiers.is_shifted() {
                     DecodedKey::Unicode('(')
                 } else {
                     DecodedKey::Unicode('9')
                 }
-            },
+            }
             KeyCode::Key0 => {
                 if modifiers.is_shifted() {
                     DecodedKey::Unicode(')')
                 } else {
                     DecodedKey::Unicode('0')
                 }
-            },
+            }
             KeyCode::Minus => {
                 if modifiers.is_shifted() {
                     DecodedKey::Unicode('_')
                 } else {
                     DecodedKey::Unicode('-')
                 }
-            },
+            }
             KeyCode::Equals => {
                 if modifiers.is_shifted() {
                     DecodedKey::Unicode('+')
                 } else {
                     DecodedKey::Unicode('=')
                 }
-            },
+            }
             KeyCode::Backspace => DecodedKey::Unicode(0x08.into()),
             KeyCode::Tab => DecodedKey::Unicode(0x09.into()),
             KeyCode::Q => {
@@ -486,5 +473,4 @@ impl KeyboardLayout for Us104Key {
             k => DecodedKey::RawKey(k),
         }
     }
-
 }

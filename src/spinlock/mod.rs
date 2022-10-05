@@ -1,15 +1,7 @@
-
-
 use core::{
     cell::UnsafeCell,
-    sync::atomic::{
-        AtomicBool,
-        Ordering,
-    },
-    ops::{
-        Deref,
-        DerefMut
-    },
+    ops::{Deref, DerefMut},
+    sync::atomic::{AtomicBool, Ordering},
 };
 
 /// Wrapper of a data in thread-safe manner.
@@ -31,7 +23,6 @@ pub struct SpinlockGuard<'a, T: 'a> {
 unsafe impl<T> Sync for Spinlock<T> {}
 
 impl<T> Spinlock<T> {
-
     /// Create new SpinnLock wrapping the supplied data.
     pub const fn new(d: T) -> Self {
         Self {
@@ -42,7 +33,11 @@ impl<T> Spinlock<T> {
 
     /// Block until it's unlocked.
     fn obtain_lock(&self) {
-        while self.lock.compare_exchange_weak(false, true, Ordering::Acquire, Ordering::Relaxed).is_err() {
+        while self
+            .lock
+            .compare_exchange_weak(false, true, Ordering::Acquire, Ordering::Relaxed)
+            .is_err()
+        {
             while self.is_locked() {
                 core::hint::spin_loop();
             }
@@ -66,16 +61,19 @@ impl<T> Spinlock<T> {
             data: unsafe { &mut *self.data.get() },
         }
     }
-
 }
 
 impl<'a, T> Deref for SpinlockGuard<'a, T> {
     type Target = T;
-    fn deref<'b>(&'b self) -> &'b Self::Target { &*self.data }
+    fn deref<'b>(&'b self) -> &'b Self::Target {
+        &*self.data
+    }
 }
 
 impl<'a, T> DerefMut for SpinlockGuard<'a, T> {
-    fn deref_mut<'b>(&'b mut self) -> &'b mut T { &mut *self.data }
+    fn deref_mut<'b>(&'b mut self) -> &'b mut T {
+        &mut *self.data
+    }
 }
 
 impl<'a, T> Drop for SpinlockGuard<'a, T> {

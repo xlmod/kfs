@@ -1,27 +1,20 @@
-
 use crate::{
+    kprint, kprintln,
     port::Port,
-    screen_clear,
-    screen_next,
-    screen_prev,
-    kprintln,
-    screen_setfgcolor,
-    screen_setbgcolor,
+    screen_clear, screen_next, screen_prev, screen_setbgcolor, screen_setcolor, screen_setfgcolor,
     vga_buffer::color::{Color, ColorCode},
-    screen_setcolor,
-    kprint,
 };
 
 /// Shutdown qemu system.
 pub fn shutdown() {
     let mut port = Port::<u16>::new(0x604);
-    unsafe {port.write(0x2000)};
+    unsafe { port.write(0x2000) };
 }
 
 /// Reboot system.
 pub fn reboot() {
     let mut port = Port::<u8>::new(0x64);
-    unsafe {port.write(0xfe)};
+    unsafe { port.write(0xfe) };
 }
 
 /// Clear the current virtual terminal.
@@ -49,7 +42,11 @@ pub fn help() {
     kprintln!("prev         - go to the previous virtual terminal");
     kprintln!("info         - print information of the kernel");
     kprintln!("read_serial  - print all bytes in serial port");
-    kprintln!("echo         - print on terminal all arguments")
+    kprintln!("echo         - print on terminal all arguments");
+    kprintln!("");
+    kprintln!("shortcut:");
+    kprintln!("  <Alt>+<ArrowLeft>  -> previous screen");
+    kprintln!("  <Alt>+<ArrowRight> -> next screen    ");
 }
 
 /// Exit the shell.
